@@ -1,0 +1,5 @@
+.idea
+.github
+.vscode
+.env
+*.csv
