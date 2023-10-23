@@ -21,6 +21,7 @@ go run main.go
 
 ```bash
 go run main.go morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+or execute the binary file and morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
 This command exports call prices from the MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. The generated CSV file is named with a timestamp and saved in the current working directory.
@@ -51,6 +52,7 @@ The exported CSV file contains the following columns:
 
 ```bash
 go run main.go morIncomingCallsDuration -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+or execute the binary file and morIncomingCallsDuration -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
 This command Export incoming call duration data for a specified date range. The generated CSV file is named with a timestamp and saved in the current working directory.
@@ -77,6 +79,7 @@ The exported CSV file contains the following columns:
 
 ```bash
 go run main.go morCallsDurationPerMobileOrLandlinePhones -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+or execute the binary file and morCallsDurationPerMobileOrLandlinePhones -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
 This command export calls duration per mobile or landline phones for a specified date range. The generated CSV file is named with a timestamp and saved in the current working directory.
