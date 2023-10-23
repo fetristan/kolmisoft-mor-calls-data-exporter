@@ -20,7 +20,7 @@ go run main.go
 # morCallsPricesByDestinationsByDeviceGroupsByProviders usage:
 
 ```bash
-morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+go run main.go morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
 This command exports call prices from the MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. The generated CSV file is named with a timestamp and saved in the current working directory.
@@ -30,7 +30,7 @@ In the file morCallsPricesByDestinationsByDeviceGroupsByProviders.go, change the
     srcGroupDevicesID
     providersID
 
-You can use the morCallsPricesByDestinationsByPolesByProviders command with the following options:
+You can use the morCallsPricesByDestinationsByDeviceGroupsByProviders command with the following options:
 ```bash
     -s, --dateStart (string): The start date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
     -e, --dateEnd (string): The end date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
@@ -50,12 +50,12 @@ The exported CSV file contains the following columns:
 # morIncomingCallsDuration usage:
 
 ```bash
-morIncomingCallsDuration -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+go run main.go morIncomingCallsDuration -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
 This command Export incoming call duration data for a specified date range. The generated CSV file is named with a timestamp and saved in the current working directory.
 
-You can use the morCallsPricesByDestinationsByPolesByProviders command with the following options:
+You can use the morIncomingCallsDuration command with the following options:
 ```bash
     -s, --dateStart (string): The start date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
     -e, --dateEnd (string): The end date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
@@ -73,6 +73,26 @@ The exported CSV file contains the following columns:
     UpdateDate
     Duration (hours)
 
+# morCallsDurationPerMobileOrLandlinePhones usage:
+
+```bash
+go run main.go morCallsDurationPerMobileOrLandlinePhones -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+```
+
+This command export calls duration per mobile or landline phones for a specified date range. The generated CSV file is named with a timestamp and saved in the current working directory.
+
+You can use the morCallsDurationPerMobileOrLandlinePhones command with the following options:
+```bash
+    -s, --dateStart (string): The start date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
+    -e, --dateEnd (string): The end date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
+```
+
+The exported CSV file contains the following columns:
+
+    Country
+    Destination
+    Duration
+    Duration (hours)
 
 ## Acknowledgements
 
