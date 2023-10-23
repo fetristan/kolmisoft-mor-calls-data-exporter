@@ -15,6 +15,23 @@ go mod tidy
 go run main.go
 ```
 
+Or just download the binary file and execute it.
+
+## Configuration
+Create a .env file at the root directory of the project and add the following variables (update with your credentials and settings):
+
+    DB_IP_MOR=127.0.0.1
+    DB_IP_MOR=127.0.0.1
+    DB_PORT_MOR=3306
+    DB_NAME_MOR=mor
+    DB_USER_MOR=mor
+    DB_PASS_MOR=mor
+    DB_SSH_IP_MOR=192.168.0.2
+    DB_SSH_PORT_MOR=22
+    DB_SSH_USER_MOR=user
+    DB_SSH_KEY_MOR=/home/user/.ssh/id_rsa
+    DB_SSH_KEY_PASS_MOR=ThePassword
+
 ## Usage
 
 # morCallsPricesByDestinationsByDeviceGroupsByProviders usage:
