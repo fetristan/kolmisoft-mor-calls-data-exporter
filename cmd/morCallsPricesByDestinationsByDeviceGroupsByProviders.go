@@ -28,6 +28,7 @@ type ModelMorCallsPricesByDestinationsByDeviceGroupsByProviders struct {
 	Prefix      string
 	Price       string
 	Duration    int
+	Calls       int
 }
 
 // Retrieve call data from the database and return it as a slice of models.
@@ -50,6 +51,7 @@ func getModelMorCallsPricesByDestinationsByDeviceGroupsByProviders(stmt *sql.Stm
 			&msg.Prefix,
 			&msg.Price,
 			&msg.Duration,
+			&msg.Calls,
 		); err != nil {
 			return nil, err
 		}
@@ -63,8 +65,8 @@ func getModelMorCallsPricesByDestinationsByDeviceGroupsByProviders(stmt *sql.Stm
 // Define the main Cobra command for exporting call prices.
 var morCallsPricesByDestinationsByDeviceGroupsByProvidersCmd = &cobra.Command{
 	Use:   "morCallsPricesByDestinationsByDeviceGroupsByProviders",
-	Short: "Export the prices of the calls from MOR database by destination grouped by device groups filtered by providers and devices.",
-	Long: `Export call prices from the MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. The CSV will include the following columns: Device Group, Country, Destination, Prefix, Price, Duration, Duration (hours), Average (Price/Min).
+	Short: "Export the prices of the answered outgoing calls from MOR database by destination grouped by device groups filtered by providers and devices.",
+	Long: `Export the prices of the answered outgoing calls from MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. The CSV will include the following columns: Device Group, Country, Destination, Prefix, Price, Duration, Duration (hours), Calls, Average (Price/Min), Average (Price/Calls), Average (Duration/Calls).
 
 Usage:
   morCallsPricesByDestinationsByDeviceGroupsByProviders -s [start_date] -e [end_date]
@@ -76,7 +78,7 @@ Flags:
 Example:
   morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 
-This command exports call prices from the MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. It generates a CSV file with the specified start and end date. The CSV file contains information about Device Group, Country, Destination, Prefix, Price, Duration, Duration (in hours), and Average Price per Minute. The generated CSV file is named with a timestamp and saved in the current working directory.`,
+This command export the prices of the answered outgoing calls from MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. It generates a CSV file with the specified start and end date. The CSV file contains information about device group, country, destination, prefix, price, duration, duration (in hours), calls numbers, average Price per Minute, average prince per Calls, average duration per calls. The generated CSV file is named with a timestamp and saved in the current working directory.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Obtain the start and end date strings from the command-line flags.
 		dateStartStr, _ := cmd.Flags().GetString("dateStart")
@@ -126,13 +128,15 @@ This command exports call prices from the MOR database, grouped by device groups
         	mor.destinations.name AS Destination,
         	c.prefix as Prefix,
         	REPLACE(CAST(ROUND(SUM(provider_price), 2) AS CHAR), '.', ',') AS Price,
-		ROUND(SUM(duration)/60) AS Duration 
+		ROUND(SUM(duration)/60) AS Duration,
+		count(*) AS Calls 
 		FROM mor.calls c inner join mor.destinations on c.prefix = mor.destinations.prefix
 		WHERE 
 			calldate  > '%s' AND
 			calldate  < '%s' AND
 			src_device_id IN (%s) AND
-			provider_id IN (%s)
+			provider_id IN (%s) AND
+			disposition = 'ANSWERED'
 		GROUP BY DeviceGroup, destination
 		ORDER BY DeviceGroup, destination;`, srcDevicesIDFilter, dateStartStr, dateEndStr, srcDevicesIDList, strings.Join(providersID, ","))
 
@@ -163,7 +167,7 @@ This command exports call prices from the MOR database, grouped by device groups
 		defer outputFile.Close()
 
 		// Write the header row to the output file.
-		fmt.Fprintln(outputFile, "Device group;Country;Destination;Prefix;Price;Duration;Duration (hours);Average (Price/Min)")
+		fmt.Fprintln(outputFile, "Device group;Country;Destination;Prefix;Price;Duration;Duration (hours);Calls;Average (Price/Min);Average (Price/Calls);Average (Duration/Calls)")
 
 		// Process and write each result to the output file.
 		for _, oneResult := range resultsCasted {
@@ -172,6 +176,12 @@ This command exports call prices from the MOR database, grouped by device groups
 
 			// Calculate the average price per minute.
 			averagePriceMinFloat := float32(0.0)
+
+			// Calculate the average price per calls.
+			averagePriceCallsFloat := float32(0.0)
+
+			//Calculate the average duration per calls.
+			averageDurationCallsFloat := float32(0.0)
 
 			// Handle potential decimal comma.
 			priceComma := strings.Replace(oneResult.Price, ",", ".", 1)
@@ -184,12 +194,36 @@ This command exports call prices from the MOR database, grouped by device groups
 				averagePriceMinFloat = float32(priceFloat / float64(oneResult.Duration))
 			}
 
+			if priceFloat > 0 && oneResult.Calls > 0 {
+				averagePriceCallsFloat = float32(priceFloat / float64(oneResult.Calls))
+			}
+
+			if oneResult.Duration > 0 && oneResult.Calls > 0 {
+				averageDurationCallsFloat = float32(oneResult.Duration / oneResult.Calls)
+			}
+
 			// Format the average price per minute.
 			averagePriceMin := strconv.FormatFloat(float64(averagePriceMinFloat), 'f', -1, 32)
+
+			// Format the average price per calls.
+			averagePriceCalls := strconv.FormatFloat(float64(averagePriceCallsFloat), 'f', -1, 32)
+
+			// Format the average duration per calls.
+			averageDurationCalls := strconv.FormatFloat(float64(averageDurationCallsFloat), 'f', -1, 32)
 
 			// Truncate the average price if it has more than 4 decimal places.
 			if len(averagePriceMin) > 4 {
 				averagePriceMin = averagePriceMin[:4]
+			}
+
+			// Truncate the average price per calls if it has more than 4 decimal places.
+			if len(averagePriceCalls) > 4 {
+				averagePriceCalls = averagePriceCalls[:4]
+			}
+
+			// Truncate the average duration per calls if it has more than 4 decimal places.
+			if len(averageDurationCalls) > 4 {
+				averageDurationCalls = averageDurationCalls[:4]
 			}
 
 			// Process and format the prefix for phone numbers.
@@ -201,6 +235,9 @@ This command exports call prices from the MOR database, grouped by device groups
 			if err == nil {
 				// Format the phone number in international format using the phonenumbers library.
 				formattedPrefix := phonenumbers.Format(phoneNumber, phonenumbers.INTERNATIONAL)
+
+				// Remove the + to the formatted phone prefix.
+				formattedPrefix = strings.Replace(formattedPrefix, "+", "", 1)
 
 				// Retrieve the region (country) code associated with the phone number.
 				regionCode := phonenumbers.GetRegionCodeForNumber(phoneNumber)
@@ -240,14 +277,14 @@ This command exports call prices from the MOR database, grouped by device groups
 				}
 
 				// Write the formatted result to the output file.
-				fmt.Fprintf(outputFile, "%s;%s;%s;%s;%s;%d;%s;%s\n", oneResult.DeviceGroup, displayRegion, oneResult.Destination, formattedPrefix, oneResult.Price, oneResult.Duration, durationHourMinSeconds, averagePriceMin)
+				fmt.Fprintf(outputFile, "%s;%s;%s;%s;%s;%d;%s;%d;%s;%s;%s\n", oneResult.DeviceGroup, displayRegion, oneResult.Destination, formattedPrefix, oneResult.Price, oneResult.Duration, durationHourMinSeconds, oneResult.Calls, averagePriceMin, averagePriceCalls, averageDurationCalls)
 			} else {
 				// Handle the case where phone number information cannot be parsed.
 				displayRegion := "UNKNOWN"
 				formattedPrefix := "UNKNOWN"
 
 				// Write the result with unknown information to the output file.
-				fmt.Fprintf(outputFile, "%s;%s;%s;%s;%s;%d;%s;%s\n", oneResult.DeviceGroup, displayRegion, oneResult.Destination, formattedPrefix, oneResult.Price, oneResult.Duration, durationHourMinSeconds, averagePriceMin)
+				fmt.Fprintf(outputFile, "%s;%s;%s;%s;%s;%d;%s;%d;%s;%s;%s\n", oneResult.DeviceGroup, displayRegion, oneResult.Destination, formattedPrefix, oneResult.Price, oneResult.Duration, durationHourMinSeconds, oneResult.Calls, averagePriceMin, averagePriceCalls, averageDurationCalls)
 			}
 		}
 		// Log a message indicating the filename of the exported data.

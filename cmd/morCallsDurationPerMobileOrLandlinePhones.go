@@ -54,8 +54,8 @@ func getModelMorCallsDurationPerMobileOrLandlinePhones(stmt *sql.Stmt) ([]any, e
 // Define the main Cobra command for exporting call prices.
 var morCallsDurationPerMobileOrLandlinePhones = &cobra.Command{
 	Use:   "morCallsDurationPerMobileOrLandlinePhones",
-	Short: "Export calls duration per mobile or landline phones for a specified date range.",
-	Long: `Export calls duration per mobile or landline phones for a specified date range. The CSV will include the following columns: Country, Destination, Duration, Duration (hours).
+	Short: "Export answered outgoing calls duration per mobile or landline phones for a specified date range.",
+	Long: `Export answered outgoing calls duration per mobile or landline phones for a specified date range. The CSV will include the following columns: Country, Destination, Duration, Duration (hours).
 
 Usage:
   morCallsDurationPerMobileOrLandlinePhones -s [start_date] -e [end_date]
@@ -67,7 +67,7 @@ Flags:
 Example:
   morCallsDurationPerMobileOrLandlinePhones -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 
-This command export calls duration per mobile or landline phones for a specified date range. It generates a CSV file with the specified start and end date. The CSV will include the following columns: Country, Destination, Duration, Duration (hours). The generated CSV file is named with a timestamp and saved in the current working directory.`,
+This command export answered outgoing calls duration per mobile or landline phones for a specified date range. It generates a CSV file with the specified start and end date. The CSV will include the following columns: Country, Destination, Duration, Duration (hours). The generated CSV file is named with a timestamp and saved in the current working directory.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Obtain the start and end date strings from the command-line flags.
 		dateStartStr, _ := cmd.Flags().GetString("dateStart")
@@ -94,7 +94,7 @@ This command export calls duration per mobile or landline phones for a specified
 		dst as Destination,
 		billsec as Duration
 		FROM mor.calls
-		WHERE calldate > '%s' and calldate < '%s' and dst_device_id = 0 and disposition != 'FAILED';`, dateStartStr, dateEndStr)
+		WHERE calldate > '%s' and calldate < '%s' and dst_device_id = 0 and disposition = 'ANSWERED';`, dateStartStr, dateEndStr)
 
 		// Log the SQL query for debugging and tracking purposes.
 		log.Print(request)

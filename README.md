@@ -41,7 +41,7 @@ go run main.go morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01
 or execute the binary file and morCallsPricesByDestinationsByDeviceGroupsByProviders -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
-This command exports call prices from the MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. The generated CSV file is named with a timestamp and saved in the current working directory.
+This command export the prices of the answered outgoing calls from MOR database, grouped by device groups, filtered by providers and devices, and organized by destination. The generated CSV file is named with a timestamp and saved in the current working directory.
 
 In the file morCallsPricesByDestinationsByDeviceGroupsByProviders.go, change the following variables to match your MOR database device id / provider id and to choose the name of your device group:
 
@@ -63,7 +63,10 @@ The exported CSV file contains the following columns:
     Price
     Duration
     Duration (hours)
+    Calls
     Average (Price/Min)
+    Average (Price/Calls)
+    Average (Duration/Calls)
 
 # morIncomingCallsDuration usage:
 
@@ -84,6 +87,7 @@ The exported CSV file contains the following columns:
 
     Did
     Seconds
+    Calls
     Provider
     Username
     Extension
@@ -99,7 +103,7 @@ go run main.go morCallsDurationPerMobileOrLandlinePhones -s "2023-01-01 00:00:00
 or execute the binary file and morCallsDurationPerMobileOrLandlinePhones -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 ```
 
-This command export calls duration per mobile or landline phones for a specified date range. The generated CSV file is named with a timestamp and saved in the current working directory.
+This command export answered outgoing calls duration per mobile or landline phones for a specified date range. The generated CSV file is named with a timestamp and saved in the current working directory.
 
 You can use the morCallsDurationPerMobileOrLandlinePhones command with the following options:
 ```bash

@@ -21,6 +21,7 @@ func init() {
 type ModelMorIncomingCallsDuration struct {
 	Did         string
 	Seconds     int
+	Calls       int
 	Provider    string
 	Username    string
 	Extension   *string
@@ -46,6 +47,7 @@ func getModelMorIncomingCallsDuration(stmt *sql.Stmt) ([]any, error) {
 		if err := rows.Scan(
 			&msg.Did,
 			&msg.Seconds,
+			&msg.Calls,
 			&msg.Provider,
 			&msg.Username,
 			&msg.Extension,
@@ -66,7 +68,7 @@ func getModelMorIncomingCallsDuration(stmt *sql.Stmt) ([]any, error) {
 var morIncomingCallsDuration = &cobra.Command{
 	Use:   "morIncomingCallsDuration",
 	Short: "Export incoming call duration data for a specified date range",
-	Long: `Export incoming call duration data for a specified date range. The CSV will include the following columns: Did, Seconds, Provider, Username, Extension, Description, Status, UpdateDate, Duration (hours).
+	Long: `Export incoming call duration data for a specified date range. The CSV will include the following columns: Did, Seconds, Calls, Provider, Username, Extension, Description, Status, UpdateDate, Duration (hours).
 
 Usage:
   morIncomingCallsDuration -s [start_date] -e [end_date]
@@ -78,7 +80,7 @@ Flags:
 Example:
   morIncomingCallsDuration -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
 
-This command export incoming call duration data for a specified date range. It generates a CSV file with the specified start and end date. The CSV will include the following columns: Did, Seconds, Provider, Username, Extension, Description, Status, UpdateDate, Duration (hours). The generated CSV file is named with a timestamp and saved in the current working directory.`,
+This command export incoming call duration data for a specified date range. It generates a CSV file with the specified start and end date. The CSV will include the following columns: Did, Seconds, Calls, Provider, Username, Extension, Description, Status, UpdateDate, Duration (hours). The generated CSV file is named with a timestamp and saved in the current working directory.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Obtain the start and end date strings from the command-line flags.
 		dateStartStr, _ := cmd.Flags().GetString("dateStart")
@@ -103,6 +105,7 @@ This command export incoming call duration data for a specified date range. It g
 		// Construct the SQL query with placeholders.
 		request := fmt.Sprintf(`SELECT d.did as Did,
 		IF(SUM(c.duration) IS NOT NULL, SUM(c.duration),0) as Seconds,
+		count(*) AS Calls,
 		p.name as Provider,
 		u.username as Username,
 		dv.extension as Extension,
@@ -144,7 +147,7 @@ This command export incoming call duration data for a specified date range. It g
 		defer outputFile.Close()
 
 		// Write the header row to the output file.
-		fmt.Fprintln(outputFile, "Did;Seconds;Provider;Username;Extension;Description;Status;UpdateDate;Duration (hours)")
+		fmt.Fprintln(outputFile, "Did;Seconds;Calls;Provider;Username;Extension;Description;Status;UpdateDate;Duration (hours)")
 
 		// Process and write each result to the output file.
 		for _, oneResult := range resultsCasted {
@@ -164,7 +167,7 @@ This command export incoming call duration data for a specified date range. It g
 			}
 
 			// Write the formatted result to the output file.
-			fmt.Fprintf(outputFile, "%s;%d;%s;%s;%s;%s;%s;%s;%s\n", oneResult.Did, oneResult.Seconds, oneResult.Provider, oneResult.Username, extensionStr, descriptionStr, oneResult.Status, oneResult.UpdateDate, durationHourMinSeconds)
+			fmt.Fprintf(outputFile, "%s;%d;%d;%s;%s;%s;%s;%s;%s;%s\n", oneResult.Did, oneResult.Seconds, oneResult.Calls, oneResult.Provider, oneResult.Username, extensionStr, descriptionStr, oneResult.Status, oneResult.UpdateDate, durationHourMinSeconds)
 		}
 		// Log a message indicating the filename of the exported data.
 		log.Printf("%s exported", filename)
