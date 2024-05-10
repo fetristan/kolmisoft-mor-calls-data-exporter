@@ -118,6 +118,27 @@ The exported CSV file contains the following columns:
     Duration
     Duration (hours)
 
+# morCallsMaxNumbersPerDaysByDestinations usage:
+
+```bash
+go run main.go morCallsMaxNumbersPerDaysByDestinations -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+or execute the binary file and morCallsMaxNumbersPerDaysByDestinations -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59"
+```
+
+This command export the maximum numbers of calls for each destinations per days. The generated CSV file is named with a timestamp and saved in the current working directory.
+
+You can use the morCallsMaxNumbersPerDaysByDestinations command with the following options:
+```bash
+    -s, --dateStart (string): The start date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
+    -e, --dateEnd (string): The end date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
+```
+
+The exported CSV file contains the following columns:
+
+    Day
+    Country
+    Calls
+
 ## Acknowledgements
 
 This tool uses the following libraries:
