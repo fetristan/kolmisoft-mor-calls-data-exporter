@@ -139,6 +139,34 @@ The exported CSV file contains the following columns:
     Country
     Calls
 
+# morCallsIncomingOutgoingNumbersDurationLastByProvider usage:
+
+```bash
+go run main.go morCallsIncomingOutgoingNumbersDurationLastByProvider -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59" -p "sfr"
+or execute the binary file and morCallsIncomingOutgoingNumbersDurationLastByProvider -s "2023-01-01 00:00:00" -e "2023-01-31 23:59:59" -p "sfr"
+```
+
+Export incoming and outgoing calls data for actives numbers (calls numbers, duration,last call date) for a specified date range and provider.
+
+You can use the morCallsIncomingOutgoingNumbersDurationLastByProvider command with the following options:
+```bash
+    -s, --dateStart (string): The start date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
+    -e, --dateEnd (string): The end date of the export (e.g., 'YYYY-MM-DD HH:mm:SS').
+    -p, --provider  string   A part of the provider name of the export (e.g., 'sfr').
+```
+
+The exported CSV file contains the following columns:
+
+    Day
+    DID
+    Incoming Calls
+    Incoming Duration (seconds)
+    Last Incoming
+    Outgoing Calls
+    Outgoing Duration (seconds)
+    Last Outgoing
+    Provider
+
 ## Acknowledgements
 
 This tool uses the following libraries:
